@@ -2,29 +2,35 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_kit/src/core/environment.dart';
-
-final _logInterceptor = LogInterceptor(
-  logPrint: (object) => log(object.toString()),
-  request: true,
-  requestHeader: true,
-  requestBody: true,
-  responseBody: true,
-);
+import 'package:flutter_kit/src/datasource/http/auth_interceptor.dart';
 
 class DioConfig {
-  final Dio dio;
+  late final Dio dio;
 
-  DioConfig({Dio? dio})
-      : dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: Environment.baseUrl,
-                headers: {
-                  'Accept': 'application/json',
-                },
-                contentType: 'application/json',
-              ),
-            ) {
-    this.dio.interceptors.add(_logInterceptor);
+  DioConfig() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: Environment.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    // Add logging interceptor in development
+    if (Environment.environment == 'dev') {
+      dio.interceptors.add(
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+        ),
+      );
+    }
+    
+    // Add auth interceptor
+    dio.interceptors.add(AuthInterceptor(dio: dio));
   }
 }

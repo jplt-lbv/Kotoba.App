@@ -11,7 +11,7 @@ import 'package:flutter_kit/src/shared/services/storage/storage.dart';
 import 'package:flutter_kit/src/shared/services/storage/local_storage.dart';
 
 final GetIt locator = GetIt.instance
-  ..registerLazySingleton(() => DioConfig())
+  ..registerLazySingleton(() => DioConfig(locator: locator))
   ..registerLazySingleton(() => AppRouter())
   ..registerLazySingleton<AppLogger>(() => AppLogger())
   ..registerLazySingleton<Storage>(() => LocalStorage())

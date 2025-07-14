@@ -1,13 +1,12 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_kit/src/core/environment.dart';
 import 'package:flutter_kit/src/datasource/http/auth_interceptor.dart';
+import 'package:get_it/get_it.dart';
 
 class DioConfig {
   late final Dio dio;
 
-  DioConfig() {
+  DioConfig({required GetIt locator}) {
     dio = Dio(
       BaseOptions(
         baseUrl: Environment.baseUrl,
@@ -31,6 +30,6 @@ class DioConfig {
     }
     
     // Add auth interceptor
-    dio.interceptors.add(AuthInterceptor(dio: dio));
+    dio.interceptors.add(AuthInterceptor(dio: dio, locator: locator));
   }
 }

@@ -1,17 +1,23 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_kit/src/core/routing/app_router.dart';
 import 'package:flutter_kit/src/datasource/models/api_response/api_response.dart';
+import 'package:flutter_kit/src/datasource/repositories/auth_repository.dart';
 import 'package:flutter_kit/src/datasource/repositories/example_repository.dart';
+import 'package:flutter_kit/src/features/auth/models/auth_models.dart';
 import 'package:flutter_kit/src/shared/locator.dart';
 
 part 'login_state.dart';
 
 class LoginController extends ValueNotifier<LoginState> {
-  final ExampleRepository _exampleRepository;
+  final AuthRepository _authRepository;
+  final AppRouter _appRouter;
 
   LoginController({
-    ExampleRepository? exampleRepository,
-  })  : _exampleRepository = exampleRepository ?? locator<ExampleRepository>(),
+    AuthRepository? authRepository,
+    AppRouter? appRouter,
+  })  : _authRepository = authRepository ?? locator<AuthRepository>(),
+        _appRouter = appRouter ?? locator<AppRouter>(),
         super(LoginInitial(email: '', password: ''));
 
   void onEmailChanged(String email) {
@@ -25,10 +31,18 @@ class LoginController extends ValueNotifier<LoginState> {
   Future<void> login() async {
     value = LoginLoading(email: value.email, password: value.password);
 
-    final response = await _exampleRepository.getExample();
+    final credentials = AuthCredentials(
+      email: value.email,
+      password: value.password,
+    );
+
+    final response = await _authRepository.login(credentials);
 
     response.when(
-      success: (data) => value = LoginSuccess(email: value.email, password: value.password, response: data),
+      success: (data) {
+        value = LoginSuccess(email: value.email, password: value.password, response: data);
+        _appRouter.replaceAll([const HomeRoute()]);
+      },
       error: (error) => value = LoginError(email: value.email, password: value.password, error: error),
     );
   }
